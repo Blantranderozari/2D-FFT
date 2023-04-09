@@ -46,10 +46,63 @@ for scene = 1:10
         ftGreen = abs(fft2(chGreen));
         ftBlue = abs(fft2(chBlue));
     elseif imgFT == 3 % return only phase (angle) of image fourier transform
-        ftRed = angle(j.*angle(fft2(chRed)));
-        ftGreen = angle(j.*angle(fft2(chGreen)));
-        ftBlue = angle(j.*angle(fft2(chBlue)));
+        ftRed = exp(j.*angle(fft2(chRed)));
+        ftGreen = exp(j.*angle(fft2(chGreen)));
+        ftBlue = exp(j.*angle(fft2(chBlue)));
     end
+    
+    if FiltDomain == 1 % Low Pass Filter (LPF) via a square functin in the image domain
+        filt=zeros(size(ftRed));
+        filt(1:filtL,1:filtL)=one(filtL,filtL)/(filtL)^2;
+        Filt = fft2(filt);
+    elseif FiltDomain == 2 % Square LPF in the frequency domain
+        FiltShift = zeros(size(ftRed));
+        FiltBoxMin = ImSize/2 - filtL;
+        FiltBoxMax = ImSize/2 + filtL;
+        FiltShift(FiltBoxMin:FiltBoxMax,FiltBoxMin:FiltBoxMax) = ones(2*filtL+1,2*filtL+1);
+        Filt = fftshift(FiltShift);
+        filt=real(fftshift(ifft2(Filt)));
+    elseif FiltDomain == 3 % Square HPF in the Freq domain
+        FiltShift=ones(size(ftRed));
+        FiltBoxMin = ImSize/2 - filtL;
+        FiltBoxMax = ImSize/2 + filtL;
+        FiltShift(FiltBoxMin:FiltBoxMax,FiltBoxMin:FiltBoxMax)= zeros(2*filtL+1,2*filtL+1);
+        Filt = fftshift(FiltShift);
+        filt=real(fftshift(ifft2(Filt)));
+    elseif FiltDomain == 4 % Circular LPF in the Freq domain
+        FiltShift=zeros(size(ftRed);
+        for m=1:ImSize
+            for n=1:ImSize
+                if ((m-ImSize/2)^2+(n-ImSize/2)^2)<filtL^2
+                    FiltShift(m,n)=1;
+                end
+            end
+        end
+        Filt = fftshift(FiltShift);
+        filt = real(fftshift(ifft2(Filt)));
+    elseif FiltDomain == 5 % Circular HPF in the Freq domain
+        FiltShift=ones(ftRed);
+        for m=1:ImSize
+            for n=1:ImSize
+                if((m-ImSize/2)^2+(n-ImSize/2)^2<filtL^2
+                    FiltShift(m,n)=0;
+                end
+            end
+        end
+        Filt = fftshift(FiltShift);
+        filt = real(fftshift(ifft2(Filt)));
+    elseif FiltDomain == 6 % Threshold
+        FiltShift = (abs(fftshift(ftBlue))>(filtL*10^2));
+        Filt = fftshift(FiltShift);
+        filt = real(fftshift(ifft2(Filt)));
+    end
+    
+    XRedFilt = ftRed .* Filt;
+    XGreenFilt = X
+    
+    
+    
+    
 end
         
         
