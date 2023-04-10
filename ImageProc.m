@@ -2,8 +2,8 @@
 % by Iain Collings, 9 Dec 2020
 
 img = imread('../ImageSmall.JPG')
-imgSize = 600;
-imgStart = 23;
+ImSize = 600;
+ImStart = 23;
 
 chRed=img(imgStart:imgSize+imgStart-1,:,1);
 chGreen=img(imgStart:imgSize+imgStart-1,:,2);
@@ -70,7 +70,7 @@ for scene = 1:10
         Filt = fftshift(FiltShift);
         filt=real(fftshift(ifft2(Filt)));
     elseif FiltDomain == 4 % Circular LPF in the Freq domain
-        FiltShift=zeros(size(ftRed);
+        FiltShift=zeros(size(ftRed));
         for m=1:ImSize
             for n=1:ImSize
                 if ((m-ImSize/2)^2+(n-ImSize/2)^2)<filtL^2
@@ -84,7 +84,7 @@ for scene = 1:10
         FiltShift=ones(ftRed);
         for m=1:ImSize
             for n=1:ImSize
-                if((m-ImSize/2)^2+(n-ImSize/2)^2<filtL^2
+                if((m-ImSize/2)^2+(n-ImSize/2)^2)<filtL^2
                     FiltShift(m,n)=0;
                 end
             end
@@ -98,11 +98,47 @@ for scene = 1:10
     end
     
     XRedFilt = ftRed .* Filt;
-    XGreenFilt = X
+    XGreenFilt = ftGreen .* Filt;
+    XBlueFilt = ftBlue .* Filt;
     
+    XRedFilt = ifft2(XRedFilt);
+    XGreenFilt = ifft2(XGreenFilt);
+    XBlueFilt = ifft2(XBlueFilt);
     
+    xFilt = img(ImStart:ImSize+ImStart-1,:,:);
+    xFilt(:,:,1) = abs(XRedFilt);
+    xFilt(:,:,2) = abs(XGreenFilt);
+    xFilt(:,:,3) = abs(XBlueFilt);
     
+    figure(1)
+    image(xFilt) % filtered image
+    title('Filtered Image','fontsize',20)
     
+    figure(2)
+    mesh(abs(fftshift(XBlueFilt))) % filtered image in FT domain
+    axis([0 600 0 600 0 10^6])
+    title('abs(Filtered FT of Image)','fontsize',20)
+    
+    figure(3)
+    mesh(abs(fftshift(ftBlue - XBlueFilt))) % amount removed by LPF freq domain
+    title('abs(Values Removed from FT of Image)','fontsize',20)
+    
+    figure(4)
+    mesh(filt) % filter in image domain
+    axis([270 330 270 330 0 max(max(filt))])
+    title('abs(The filter in the Image domain)','fontsize',20)
+    
+    figure(5) 
+    mesh(fftshift(real(Filt))) % filter in FT domain
+    title('abs(The filter in the FT domain)','fontsize',20)
+    
+    pause
+    
+    if scene == 10
+        figure(1)
+        mesh(abs(xRedFilt))
+        view(90,90)
+    end
 end
-        
+
         
